@@ -1,0 +1,9 @@
+CREATE TABLE watermark_table
+(
+	last_load VARCHAR(2000)
+)
+
+INSERT INTO watermark_table
+VALUES('DT00000')
+
+SELECT * FROM watermark_table
