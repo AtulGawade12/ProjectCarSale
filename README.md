@@ -61,7 +61,10 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
 
 ## 4] Azure SQL:
    - create resource, Azure SQL.
-   - Select SQL databases as the deployment option. This will help Azure to manage all admin level tasks. ![image](https://github.com/user-attachments/assets/c2778a81-a218-49ea-a920-df558e22ebeb)
+   - Select SQL databases as the deployment option. This will help Azure to manage all admin level tasks.
+   
+      ![image](https://github.com/user-attachments/assets/c2778a81-a218-49ea-a920-df558e22ebeb)
+     
    - SQL managed instances: will give admin level access.
    - SQL virtual machines: will provide virtual machine with Azure SQL installed in it and will have all admin level roles and responsibility.
    - SQL databses -> Enter database name -> craete new server -> Authentication Method: Use both SQL & MS Entra authentication -> set server admin login ID and 
@@ -80,12 +83,33 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
      connection -> create.
    - Go to SourcePrep pipeline -> create copy activity -> source (parameterised dataset) -> New -> HTTP -> csv -> ls_git -> Advanced -> open this dataset -> parameter        -> Name (load flag) -> connection -> Relative URL -> Dynamic Content -> paste the relative URL without file name (as file name will be dynamic I>E> changing 
      during incremental load) -> @{select parameter (load flag)} -> give the value for load flag parameter source file name...... this is how you will create 
-     parameterised dataset.![parameterizesLinked Service from github to adf](https://github.com/user-attachments/assets/b17d58d4-18a1-40c1-9796-68bcb149f019)
+     parameterised dataset.
+
+     ![parameterizesLinked Service from github to adf](https://github.com/user-attachments/assets/b17d58d4-18a1-40c1-9796-68bcb149f019)
 
    - Now create sink dataset: sink -> sink dataset -> New -> Azure SQL Database -> ls_sqlDB -> table name -> ok
-   - Click debug to run the pipeline. This will copy the initial data from GitHub and load it to Azure SQL table source_car_sale ![Git to SQLDb_Pipeline1_successfull](https://github.com/user-attachments/assets/b5bf45e3-d865-4791-8545-34b78e4bb810)
+   - Click debug to run the pipeline. 
+   
+      ![Git to SQLDb_Pipeline1_successfull](https://github.com/user-attachments/assets/b5bf45e3-d865-4791-8545-34b78e4bb810)
 
-## 6] 
+   - This will copy the initial data from GitHub and load it to Azure SQL table source_car_sale.
+
+     ![Date stored successfully into Azure SQL DB](https://github.com/user-attachments/assets/d416cb97-a4e3-4edf-8a49-098af9bb17d9)
+
+## 6] Incremental Load Pipeline:
+   - We will create new pipeline (incremental_pipeline) in which we will have 2 Lookup Activities, 1 Copy Activity & 1 Stored Procedure. 1 Lookup Activity will 
+     capture last load date and another will Max date. Stored Procedure will stored the Max date and will replace the last load date from 1st lookup activity with Max 
+     date using watermark table and stored procedure in SQL.
+      (i) Watermark Table: This table will hold and replace Last load date value. in our dataset, min date is 'DT00001', thus we have given the last load value as day 
+          before 'DT00001', i.e. "DT00000".
+
+        ![image](https://github.com/user-attachments/assets/3af115ca-6a15-4d6f-ac50-0383414ad9db)
+
+     (ii) Stored Procedure: Create stored procedure in SQL which will update the value of last load, everytime we run the pipeline with incremental data.
+
+          ![image](https://github.com/user-attachments/assets/1ff82d02-e545-492f-8574-a85bbe80e685)
+
+     (iii) 
 
 
 
