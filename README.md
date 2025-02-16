@@ -1,5 +1,5 @@
 
-#Car Sales Data Engineering Pipeline
+# Car Sales Data Engineering Pipeline
 
 #Project Overview
 This project creates a data engineering pipeline using Medallion Architecture to extract car sales performance data from GitHub, transform and load it into Azure Data Lake Storage (ADLS) Gen2 and Azure SQL Database. The pipeline enables incremental data loading, data transformation, and creation of a dimensional data model in a star schema.
