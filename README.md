@@ -1,17 +1,17 @@
 
 # Car Sales Data Engineering Pipeline
 
-# Project Overview
+## Project Overview
 This project creates a data engineering pipeline using Medallion Architecture to extract car sales performance data from GitHub, transform and load it into Azure Data Lake Storage (ADLS) Gen2 and Azure SQL Database. The pipeline enables incremental data loading, data transformation, and creation of a dimensional data model in a star schema.
 
-# Architecture
+## Architecture
 The pipeline follows the Medallion Architecture, consisting of the following layers:
 
 - Bronze Layer: Raw data extracted from GitHub and stored in ADLS Gen2 using Azure Data Factory (ADF) in Parquet file format.
 - Silver Layer: Transformed data stored in ADLS Gen2, accessible by data scientists for separate analysis using Databricks.
 - Gold Layer: Dimensional data model in a star schema, stored in Delta format, serving as the single source of truth for downstream applications like Power BI.
 
-# Tools and Technologies
+## Tools and Technologies
 - Azure Data Factory (ADF): Used for data extraction, transformation, and loading.
 - Azure Data Lake Storage (ADLS) Gen2: Used for storing raw and transformed data.
 - Databricks: Used for data transformation and creation of the Silver Layer.
@@ -21,7 +21,7 @@ The pipeline follows the Medallion Architecture, consisting of the following lay
 - Parquet: Used for storing raw data in the Bronze Layer.
 - Delta: Used for storing data in the Gold Layer.
 
-# Pipeline Workflow
+## Pipeline Workflow
 1. Extract raw data from GitHub using ADF.
 2. Store raw data in the Bronze Layer of ADLS Gen2 using ADF.
 3. Transform data using Databricks and store in the Silver Layer.
@@ -29,14 +29,15 @@ The pipeline follows the Medallion Architecture, consisting of the following lay
 5. Load data into Azure SQL Database.
 6. Use Power BI to create dashboards and visualizations.
 
-# Incremental Loading
+## Incremental Loading
 The pipeline is designed to store incremental data, where:
 
 - At the first run, all data is stored.
 - At subsequent runs, only incremental data is stored.
 
-# Access and Usage
+## Access and Usage
 Data scientists can access the Silver Layer for separate analysis. Downstream applications like Power BI can access the Gold Layer for creating dashboards and visualizations.
+
 
 # Detailed Steps:
 
