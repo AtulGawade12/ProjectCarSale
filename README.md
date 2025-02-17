@@ -105,11 +105,42 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
 
         ![image](https://github.com/user-attachments/assets/3af115ca-6a15-4d6f-ac50-0383414ad9db)
 
-     (ii) Stored Procedure: Create stored procedure in SQL which will update the value of last load, everytime we run the pipeline with incremental data.
+     (ii) Stored Procedure: Create stored procedure in SQL which will update the value of last load as Max date, everytime we run the pipeline with incremental data.
 
-          ![image](https://github.com/user-attachments/assets/1ff82d02-e545-492f-8574-a85bbe80e685)
+        ![image](https://github.com/user-attachments/assets/5eb232dd-214e-49c5-becb-78c645359d76)
 
-     (iii) 
+     (iii) Lookup Activity-I (Last load date): Settings -> source dataset -> ds_sqlDB (already created) -> edit -> create parameter -> name: table name (as we are 
+           defining table name in this parameter) -> Connection -> Enter manually -> add table name dynamically -> give table name value for created parameter -> 
+           uncheck First row only -> use query: query ->  Query: SELECT * FROM watermark_table;
+           This will give last load date
+
+     ![image](https://github.com/user-attachments/assets/117a8b93-6c2b-43ae-b771-1b8b02a1204f)
+
+     (iv) Lookup Activity-II (Max date): settings -> Source dataset: ds_sqlDB -> table name (previously created parameter): source_car_sale -> uncheck First row only             -> use query: query -> SELECT MAX(Date_ID) FROM source_car_sale;
+          This will give Max date value
+
+     ![image](https://github.com/user-attachments/assets/6d7ad75c-0fc0-4229-a8ba-523bf8adae28)
+
+     (v) Copy Activity (will copy data incrementally): Source: ds_sqlDB -> table name (previously created parameter): source_car_sale -> use query: query -> query: 
+         add dynamic content -> ![image](https://github.com/user-attachments/assets/7efa0de5-5604-4bc7-a2f7-6aabaf799dc3) -> Sink -> Sink dataset -> new -> ADLS gen 2 
+         -> parquet -> Linked service: new -> create new linked service -> import schema: none
+         This will copy and load all the data within last load and max load date range. in our case this is initial run since we are copying and loading raw data for 
+         the first time.
+
+     ![InitialDataLoadingDetails](https://github.com/user-attachments/assets/9fe87062-e916-4275-808b-95fb0deb4db4)
+
+     (vi) Stored Procedure Activity: This will list all the stored procedures stored withing mentioned linked service or linked database.
+          settings -> linked service: ls_sqlDB -> stored procedure name: UpdateWatermarkTable -> stored procedure parameters -> import -> It will automatically fetch 
+          the parameter we have defined in the stored procedure query (lastload) -> value: give value of Max date from Lookup Activity-II dynamically.
+
+     ![image](https://github.com/user-attachments/assets/5742f71c-c382-4b71-bfc6-d55c5c91a3ea)
+
+   - We have completed our 2nd pipeline which will copy data from SQL DB and paste it into raw layer of ADLS incrementally. 
+
+          
+
+
+
 
 
 
