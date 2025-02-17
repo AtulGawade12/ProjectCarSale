@@ -100,7 +100,8 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
    - We will create new pipeline (incremental_pipeline) in which we will have 2 Lookup Activities, 1 Copy Activity & 1 Stored Procedure. 1 Lookup Activity will 
      capture last load date and another will Max date. Stored Procedure will stored the Max date and will replace the last load date from 1st lookup activity with Max 
      date using watermark table and stored procedure in SQL.
-      (i) Watermark Table: This table will hold and replace Last load date value. in our dataset, min date is 'DT00001', thus we have given the last load value as day 
+
+     (i) Watermark Table: This table will hold and replace Last load date value. in our dataset, min date is 'DT00001', thus we have given the last load value as day 
           before 'DT00001', i.e. "DT00000".
 
         ![image](https://github.com/user-attachments/assets/3af115ca-6a15-4d6f-ac50-0383414ad9db)
@@ -112,30 +113,51 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
      (iii) Lookup Activity-I (Last load date): Settings -> source dataset -> ds_sqlDB (already created) -> edit -> create parameter -> name: table name (as we are 
            defining table name in this parameter) -> Connection -> Enter manually -> add table name dynamically -> give table name value for created parameter -> 
            uncheck First row only -> use query: query ->  Query: SELECT * FROM watermark_table;
-           This will give last load date
+           (This will give last load date).
 
      ![image](https://github.com/user-attachments/assets/117a8b93-6c2b-43ae-b771-1b8b02a1204f)
 
      (iv) Lookup Activity-II (Max date): settings -> Source dataset: ds_sqlDB -> table name (previously created parameter): source_car_sale -> uncheck First row only             -> use query: query -> SELECT MAX(Date_ID) FROM source_car_sale;
-          This will give Max date value
+           (This will give Max date value)
 
      ![image](https://github.com/user-attachments/assets/6d7ad75c-0fc0-4229-a8ba-523bf8adae28)
 
      (v) Copy Activity (will copy data incrementally): Source: ds_sqlDB -> table name (previously created parameter): source_car_sale -> use query: query -> query: 
          add dynamic content -> ![image](https://github.com/user-attachments/assets/7efa0de5-5604-4bc7-a2f7-6aabaf799dc3) -> Sink -> Sink dataset -> new -> ADLS gen 2 
-         -> parquet -> Linked service: new -> create new linked service -> import schema: none
-         This will copy and load all the data within last load and max load date range. in our case this is initial run since we are copying and loading raw data for 
-         the first time.
+         -> parquet -> Linked service: new -> create new linked service -> import schema: none.
+           This will copy and load all the data within last load and max load date range. in our case this is initial run since we are copying and loading raw data 
+           for the first time.
 
      ![InitialDataLoadingDetails](https://github.com/user-attachments/assets/9fe87062-e916-4275-808b-95fb0deb4db4)
 
-     (vi) Stored Procedure Activity: This will list all the stored procedures stored withing mentioned linked service or linked database.
+     (vi) Stored Procedure Activity: This will list all the stored procedures stored within mentioned linked service or linked database.
           settings -> linked service: ls_sqlDB -> stored procedure name: UpdateWatermarkTable -> stored procedure parameters -> import -> It will automatically fetch 
           the parameter we have defined in the stored procedure query (lastload) -> value: give value of Max date from Lookup Activity-II dynamically.
 
      ![image](https://github.com/user-attachments/assets/5742f71c-c382-4b71-bfc6-d55c5c91a3ea)
 
-   - We have completed our 2nd pipeline which will copy data from SQL DB and paste it into raw layer of ADLS incrementally. 
+   - We have completed our 2nd pipeline which will copy data from SQL DB and paste it into raw layer of ADLS incrementally. Click debug to run.
+
+     ![SqlDbToADLS_Pipeline2_successsfull](https://github.com/user-attachments/assets/8ef685c6-e2fc-43f7-9516-a0d532425518)
+
+   - We can see that the watermark table has updated the value to Max date DT01245
+
+     ![watermarkTableSuccessfullyUpdatedValue](https://github.com/user-attachments/assets/2e798f99-b149-4139-95ae-adab66ddeea3)
+
+   - Initial Run: In initial run last load date is (min date -1 : DT00000) and MAx date is DT01245. Copy activity will copt all the data where date range is between 
+     last load date and Max date. Stored Procedure activity will store the max date value and will replace the last load date for next run as max date for initial run 
+     (DT01245).
+
+     ![image](https://github.com/user-attachments/assets/cd010cef-919d-4e1f-a832-0a02e57a64a3)
+
+   - Incremental Run: Lets say for incremental run, we have max date as DT01247. Now in incremental run, stored procedure will replace the value of last load date to 
+     DT01245. Copy activity will run in date range between DT01245 & DT01247. Stored Procedure activity will store Max date value as DT01247 and will replace last 
+     load date to DT01247 for next incremental load.
+
+     ![image](https://github.com/user-attachments/assets/7da50e74-2ad2-4aff-a185-91a9b5a55947)
+
+
+
 
           
 
