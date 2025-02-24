@@ -140,6 +140,8 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
 
      ![SqlDbToADLS_Pipeline2_successsfull](https://github.com/user-attachments/assets/8ef685c6-e2fc-43f7-9516-a0d532425518)
 
+     ![data_stored_ in_bronze_container_successfully_in_parquet_format](https://github.com/user-attachments/assets/1ef71b4c-4a9f-49c8-ae2d-f4dcced0717d)
+
    - We can see that the watermark table has updated the value to Max date DT01245
 
      ![watermarkTableSuccessfullyUpdatedValue](https://github.com/user-attachments/assets/2e798f99-b149-4139-95ae-adab66ddeea3)
@@ -155,6 +157,40 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
      load date to DT01247 for next incremental load.
 
      ![image](https://github.com/user-attachments/assets/7da50e74-2ad2-4aff-a185-91a9b5a55947)
+
+## 7] Databricks:
+   - Go to resource group -> search Azure databricks -> configure -> Review + Create
+   - Unity Metastore: We will be attaching our databricks workspace to unity metastore to activate unity catalog.
+      - Go to admin console of Databricks ([accounts.azuredatabricks.net](https://accounts.azuredatabricks.net/)) -> catalog -> create metastore (You can create only 
+        one metastore in one region) -> configure -> create one dedicated container in our azure storage account and give container path in the configuration -> Give 
+        access connector ID by creating Access connector for databricks.
+      - Access connector for databricks: Go to azure portal -> search Access connectors for Databricks -> create -> configure -> Review + Create -> Assign a role of 
+       "Storage blob data contributor" to this Access connector
+      - Go to ADLS -> Access control IAM -> Add role assignment -> Storage blob data contributor -> Managed Identities (Select this to assign role to any resource)-> 
+        search for newly created access connector -> Review + Assign.
+      - Now give access connector ID to metastore configuration -> create
+    
+        ![Databricks_workspace_addedTo_metastore](https://github.com/user-attachments/assets/17a81dcd-e617-4b46-a20b-ddf404a8bcf3)
+
+      - Attach workspace: Workspaces -> assign to workspace -> select workspace -> Assign -> Enable Unity Catalog. You can see the metastore added to the workspace
+    
+        ![image](https://github.com/user-attachments/assets/1cdde6f2-1ed4-41b6-895f-1d9c6fcba126)
+
+   - Go to databricks and now create the cluster.
+    
+        ![Compute_Cluster_details](https://github.com/user-attachments/assets/1011c165-b179-41ef-a665-8e64dfcd0796)
+
+   - Goto catalog tab in Databricks workspace -> create three external locations for all three containers (bronze, silver, gold) in order to read and write data in 
+     databricks.
+     - Catalog -> External Data -> credentials -> create credentials -> Give Access connector ID -> create -> Catalog -> External Data -> Create External 
+       Location -> give path URL for ADLS container -> give newly created creds -> create -> create two more external locations.
+
+        ![extLocation_creation_in_databricks](https://github.com/user-attachments/assets/f71de9d0-44b3-422f-b093-50f567705b7e)
+
+   -
+
+      
+
 
 
 
