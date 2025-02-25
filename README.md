@@ -187,7 +187,119 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
 
         ![extLocation_creation_in_databricks](https://github.com/user-attachments/assets/f71de9d0-44b3-422f-b093-50f567705b7e)
 
-   -
+## 8] Creating One Big Table in Databricks (Silver layer)
+   - We will be creating one big table here using some transformation and will be storing it into Silver container.
+   - Craete workspace: Workspace -> create -> Folder
+   - Create notebook: Folder -> Create -> notebook -> Database_notebook
+   - connect the cluster that you've created.
+   - Create a catalog which is similar to database in sql. Withing catalog, create two different schemas. One for silver layer where we will be creating one big table 
+     which will be used by Data Scientist/others and one for gold layer where we will keep our data model (Dimensional Data Model- Star Schema).
+   - Create another notebook -> Silver_notebook : To read the data stored in the bronze layer -> Transform the data to create one big table -> Write the data in the 
+     gold layer.
+   - Read the data from bronze layer:
+
+     ![image](https://github.com/user-attachments/assets/85d52b13-0808-4643-8f97-fc6c5a3ac005)
+
+   - Transformations:
+
+     ![image](https://github.com/user-attachments/assets/b17c96aa-1ec4-4c65-b50b-92020e71a131)
+
+     ![transformation 1](https://github.com/user-attachments/assets/2a14e102-4331-4930-b4fa-27d74419d2e5)
+
+     ![image](https://github.com/user-attachments/assets/6b84c621-df5a-4160-a55c-0f4db10406aa)
+
+     Some adhoc Analysis:
+
+     ![Adhoc analysis on agg function and visualization on top of it](https://github.com/user-attachments/assets/f31a82ef-fa7c-4a88-875d-a96444de5f81)
+
+   - Data writing to silver layer:
+
+     ![image](https://github.com/user-attachments/assets/43cc4179-21b8-46a5-82ec-b8d95d2b8f19)
+
+     Data written successfully into silver layer:
+     
+     ![data successfully written to silver container](https://github.com/user-attachments/assets/491a23ad-f28c-4cdb-aacc-13c6db35b0a9)
+
+   - We can also query the data, even though we have not created any table in databricks:
+
+     ![image](https://github.com/user-attachments/assets/4116cbaf-20e1-4bfb-90d6-65e28a0674c7)
+
+## 9] Creating a Data Model- Star Schema in Databricks (Gold layer):
+
+![Star Schema](https://github.com/user-attachments/assets/9bd2f632-a20c-4b0b-b5ec-d89bc3feb30c)
+
+   - Create a new notebook -> Gold_dim_model : to create first dimension
+     (1) create a flag parameter: This will flag if its initial run or incremental run:
+
+     ![Incremental flag creation with dewfalt value as 0](https://github.com/user-attachments/assets/755f2f25-7991-4753-ba3a-b83d9647354d)
+
+     (2) Create dataframe df_src which will read the model dimensions from silver layer:
+
+     ![image](https://github.com/user-attachments/assets/cc7175e5-edab-4fcf-a8f3-e3abff595f8c)
+
+     (3) Create df_sink which will bring blank schema in case of initial run and will bring all the existing data in case of incremental run:
+
+     ![image](https://github.com/user-attachments/assets/b724a9cc-af77-4391-bc1e-16d69a6685d2)
+
+     (4) Now, apply left join between df_src & df_sink to filter old and new records:
+
+     ![left Join  Initial Load-all null so we can insert all the data](https://github.com/user-attachments/assets/71e40036-7dcb-47d0-b0eb-d8ed278b6804)
+
+     (5) create df_filter_old which will have all the records with not null value in dim_model_key column: (We will update this data since it has updated info against 
+         existing dim_model_key)
+
+     ![df_filter_old](https://github.com/user-attachments/assets/f78955c9-4b4d-4755-9d25-792fae3011e6)
+
+     (6) create df_filter_new which will have all the records with null value in dim_model_key column: (We will insert this data)
+
+     ![df_filetr_new-without key col as we are goint to create our own surr key col](https://github.com/user-attachments/assets/00e147cd-8a95-426b-84e7-48b1b0c5aede)
+
+     (7) Create surrogate key column and add max surrogate key using incremental_flag:
+
+     ![max surrogate key](https://github.com/user-attachments/assets/21c7d4bc-c341-4e4b-8422-d6189c1f35f0)
+
+     ![create surrogate key column and add max to it](https://github.com/user-attachments/assets/2ef5ee14-07f3-408a-b3f1-5002bbcb8628)
+
+     (8) Create df_final which is df_filter_old + df_filter_new:
+
+     ![df_final](https://github.com/user-attachments/assets/ebb4f862-97d1-46b4-a02a-6cb74da0d2ad)
+
+     (9) Now, we will apply slowly changing dimension logic:
+
+     ![SCD T-1 (Upsert) and table created](https://github.com/user-attachments/assets/80d9f3f1-d98f-422f-a9be-f5820a319b47)
+
+     Table is now created after initial run and our 1st scd is ready:
+
+     ![1st slowly changing dimension table ready (dim_model)](https://github.com/user-attachments/assets/01bf44bc-1bdb-460d-88cf-cfc8599bb60d)
+
+     (10) Similarly, remaining dimension tables are created:
+
+     ![All dimension tables are created](https://github.com/user-attachments/assets/7b2ec884-d725-4248-945e-0dd9611a7c0e)
+
+
+   - Create a notebook -> Gold_fact_sales (to create fact table)
+     (1) 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     
+
+
+     
 
       
 
