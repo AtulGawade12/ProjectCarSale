@@ -2,32 +2,37 @@
 # Car Sales Data Engineering Pipeline
 
 ## Project Overview
-This project creates a data engineering pipeline using Medallion Architecture to extract car sales performance data from GitHub, transform and load it into Azure Data Lake Storage (ADLS) Gen2 and Azure SQL Database. The pipeline enables incremental data loading, data transformation, and creation of a dimensional data model in a star schema.
+This project creates a data engineering pipeline using Medallion Architecture. Pipeline extracts car sales performance data from GitHub and load it to Azure SQL Database, then into ADLS bronze layer. The transformation is done using Databricks and load into ADLS silver layer. The pipeline enables incremental data loading, data transformation. Also, it creates the dimensional data model in a star schema in databricks and load it into ADLS gold layer.
 
 ## Architecture
+
+![image](https://github.com/user-attachments/assets/30e6f8b4-cc6d-4101-8786-37356b0fa934)
+
 The pipeline follows the Medallion Architecture, consisting of the following layers:
 
 - Bronze Layer: Raw data extracted from GitHub and stored in ADLS Gen2 using Azure Data Factory (ADF) in Parquet file format.
 - Silver Layer: Transformed data stored in ADLS Gen2, accessible by data scientists for separate analysis using Databricks.
-- Gold Layer: Dimensional data model in a star schema, stored in Delta format, serving as the single source of truth for downstream applications like Power BI.
+- Gold Layer: Dimensional data model in a star schema, stored in Delta format, serving for downstream applications like Power BI.
 
 ## Tools and Technologies
-- Azure Data Factory (ADF): Used for data extraction, transformation, and loading.
+- Azure Data Factory (ADF): Used for data extraction and loading.
 - Azure Data Lake Storage (ADLS) Gen2: Used for storing raw and transformed data.
-- Databricks: Used for data transformation and creation of the Silver Layer.
+- Databricks: Used for data transformation and creation of the star schema.
 - Azure SQL Database: Used for storing data.
 - Power BI: Used for creating dashboards and visualizations.
 - GitHub: Used for storing raw data.
-- Parquet: Used for storing raw data in the Bronze Layer.
-- Delta: Used for storing data in the Gold Layer.
+- Parquet: Open-source file format that stores data in columns.
+- Delta: Open-source data storage format that stores only the changes made to data. It's built on Parquet files.
+- Star Schema: A database design that organizes data into a central table and surrounding dimension tables.
+- Slowly changing dimension (SCD) type 1: A framework that overwrites existing data & inserts new data in a dimension 
+  table to reflect the current state.
 
 ## Pipeline Workflow
-1. Extract raw data from GitHub using ADF.
+1. Extract raw data from Azure SQL Database using ADF.
 2. Store raw data in the Bronze Layer of ADLS Gen2 using ADF.
 3. Transform data using Databricks and store in the Silver Layer.
 4. Create a dimensional data model in a star schema and store in the Gold Layer in Delta format.
-5. Load data into Azure SQL Database.
-6. Use Power BI to create dashboards and visualizations.
+5. Use Power BI to create dashboards and visualizations.
 
 ## Incremental Loading
 The pipeline is designed to store incremental data, where:
@@ -229,6 +234,7 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
 ![Star Schema](https://github.com/user-attachments/assets/9bd2f632-a20c-4b0b-b5ec-d89bc3feb30c)
 
    - Create a new notebook -> Gold_dim_model : to create first dimension
+     
      (1) create a flag parameter: This will flag if its initial run or incremental run:
 
      ![Incremental flag creation with dewfalt value as 0](https://github.com/user-attachments/assets/755f2f25-7991-4753-ba3a-b83d9647354d)
@@ -278,7 +284,123 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
 
 
    - Create a notebook -> Gold_fact_sales (to create fact table)
-     (1) 
+     
+     (1) Create df_silver to read the silver layered data in order to see which columns we need to include in fact table:
+
+     ![reading silver data for fact table](https://github.com/user-attachments/assets/713f64f9-6dda-4874-86a9-cef22cb90b23)
+
+     (2) Create df for all the dimensions:
+
+     ![Reading all the dimension tables](https://github.com/user-attachments/assets/5e00878a-746a-4e41-b662-8071e909c124)
+
+     (3) Apply join between df_silver and all the df for dimensions in order to bring surrogate keys:
+
+     ![Bringing all the dim keys to the fact table](https://github.com/user-attachments/assets/011e1027-5803-437e-bde8-57b6cba37901)
+
+     (4) Write the data:
+
+     ![writing fact table to gold layer with UPSERT](https://github.com/user-attachments/assets/3b59c38c-42be-4a79-81eb-27d8b2272dc6)
+
+     Fact table created:
+
+     ![Fact table created](https://github.com/user-attachments/assets/cb198352-2e52-40bc-b647-1aa777603be3)
+
+     ![Fact sales can be seen in catalog](https://github.com/user-attachments/assets/c00b257c-421a-471a-9ec0-9c7cea8fc773)
+
+
+## 10] Running pipeline in Databricks:
+
+   - We can create and run the notebook pipeline in databricks itself using workflow:
+
+     ![successful run in Databricks workflow](https://github.com/user-attachments/assets/c7eb2068-690a-49cb-b7cd-fd4c1972ae6a)
+
+     ![workflow timeline](https://github.com/user-attachments/assets/6ea74770-498a-43c5-b186-642fa95d8b3a)
+
+## 11] SQL editor in Databricks:
+
+   - Since our data model is now ready, downstream user like data analyst/data scientist can use the SQL editor in Databricks to query the data.
+
+     ![data queried using SQL editor in databricks](https://github.com/user-attachments/assets/7bcdea1b-7c82-4b3f-82bc-d344404feb31)
+
+     
+## 12] Incremental data load:
+
+   - Now, go to ADF to pull the incremental data -> SourcePrep pipeline -> give the incremental file name (IncrementalSales.csv) -> run the pipeline (This will load 
+     the incremental data to Azure SQL) ![Change the input file name in source pipeline](https://github.com/user-attachments/assets/40675f01-e794-4a6c-b3da-32943ccb6185)
+     -> go to incremental_pipeline -> run the pipeline -> This should load the data incrementally into bronze layer.
+
+     ![Increm pipeline ran successfully in ADF](https://github.com/user-attachments/assets/4683c57d-9ef3-42be-a115-9f021af6d179)
+
+   - We can check if our data is loaded incrementally or not:
+
+     Go to sql query editor in Azure. query the watermark table. It should have updated last load date:
+
+     ![watermark table has now updated value ](https://github.com/user-attachments/assets/658dcd84-c0f2-454b-a28c-d2d6cd68f727)
+
+     
+   - Go to Azure Databricks -> Run the workflow created for incremental run.
+
+     ![Incremental run was successful in databricks workflow](https://github.com/user-attachments/assets/9d9b94cd-6de6-4874-b57d-a09a4f12b0ee)
+
+     Workflow ran successfully!
+
+
+   - We can validate the incremantally loaded data:
+       (1) Go to SQL Editor in Azure Databricks -> Query the fact table
+
+     ![Increm Data Validation1](https://github.com/user-attachments/assets/bb9a9e0a-b15d-493b-8f83-1d9e24a100ae)
+
+       (2) Query dim_dealer table:
+
+     ![Increm data validation 2](https://github.com/user-attachments/assets/5ede36bc-fefb-41c6-9ebd-d3674f5c5554)
+
+       (3) Query dim_model table:
+
+     ![new rec added](https://github.com/user-attachments/assets/09ed46ea-c420-479d-85d2-c1cbc6b2e716)
+
+
+## 13] End to end pipeline in ADF:
+
+   - We can also run the full pipeline in ADF itself. To add the Databricks Notebook -> add notebook activity -> create linked service -> To create access token -> go 
+     to databricks -> profile -> settings -> developer -> access token -> manage -> Generate new -> generate -> copy and paste it in the linked service creation 
+     dashboard -> create linked service -> settings -> Give Notebook path
+
+   - Similarly add all attach all the notebooks and run the pipeline:
+
+     ![end to end pipeline in ADF](https://github.com/user-attachments/assets/57090e4c-b9e9-4f05-96e3-9904fee23091)
+
+
+## 14] PowerBI connection:
+
+   Since we have created our data warehouse we can connect it to visualization tool eg. PowerBI:
+
+   Azure Databricks -> Partner connect -> Search Microsoft Power BI -> download connection file -> Open the downloaded file with Power BI application.
+
+   All the tables will be there in the tool. We can build visualization on top of it. 
+
+     
+
+     
+
+
+       
+
+     
+
+
+     
+
+     
+
+
+
+     
+
+
+
+
+     
+
 
 
 
