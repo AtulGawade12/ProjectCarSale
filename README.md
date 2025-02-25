@@ -346,6 +346,7 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
 
 
    - We can validate the incremantally loaded data:
+
        (1) Go to SQL Editor in Azure Databricks -> Query the fact table
 
      ![Increm Data Validation1](https://github.com/user-attachments/assets/bb9a9e0a-b15d-493b-8f83-1d9e24a100ae)
