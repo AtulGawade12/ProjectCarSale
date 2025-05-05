@@ -380,7 +380,7 @@ Data scientists can access the Silver Layer for separate analysis. Downstream ap
    All the tables will be there in the tool. We can build visualization on top of it. 
 
 
-#Project Summary:
+# Project Summary:
 
 ![diagram](https://github.com/user-attachments/assets/568deb19-d1cc-4ef5-b44e-ad2350f4dca7)
 
